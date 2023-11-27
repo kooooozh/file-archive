@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<div class="user-info" align="center">
+    <div class="avatar">
+        {% if avatar %}
+        <img 
+            src="../../media/profile/{{avatar}}"
+            alt="photo"
+            class="profile-photo"
+        />
+        {% endif %}
+    </div>
+    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
+        <button type="button" onclick="window.location.href='{% url edit_page photo_edit %}'">Сменить фото профиля</button>
+    </div>
+    <div align="center" style="border: none; max-width: 700px;">
+        <p>
+            <label class="user-field"><tt>Имя пользователя: </tt></label>
+            <label class="user-field">"{{ username }}"</label><br>
+            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page username_edit %}'">Изменить имя пользователя</button>
+        </p>
+    </div>
+    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
+        <p>
+            <label class="user-field"><tt>Адрес электронной почты: </tt></label>
+            <label class="user-field">{{ email }}</label><br>
+            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page email_edit %}'">Изменить адрес электронной почты</button>
+        </p>
+    </div>
+    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
+        <p>
+            <label class="user-field"><tt>Пароль: </tt></label>
+            <label class="user-field">{{ password }}</label><br>
+            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page password_edit %}'">Изменить пароль</button>
+        </p>
+    </div>
+    <div>
+        <p>
+            <button style="font-size: 15px;" onclick="window.location.href='{% url back_page %}'">Назад</button><br> 
+        </p>
+    </div>
+</div>
+{% endblock %}

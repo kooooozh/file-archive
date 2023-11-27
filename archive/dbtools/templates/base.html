@@ -1,0 +1,20 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}" />
+    <link rel="shortcut icon" href="{% static 'images/logo.png' %}" />
+    <head>
+        <title>Главная страница</title>
+    </head>
+    {% block cap %}
+    <body>
+        <div class="cap">
+            <h1 class="heading">ARCHIVE</h1>
+        </div>
+    </body>
+    {% endblock %}
+    {% block pagecontent %}
+    {% endblock %}
+</html>

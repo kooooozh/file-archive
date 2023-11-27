@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<div class="container">
+    <h1 class="form-name"><tt>Вход в аккаунт</tt></h1>
+    <form action="" method="post" align="center">
+        {% csrf_token %}
+        {% if form_error.error_is_raised %}
+            <p><label class="error"><b>{{ form_error.error_message }}</b></label></p>
+        {% endif %}
+        {% for item in form %}
+            <p>
+                <label class="input-prompts">{{ item.label }}</label>
+                {{ item }}
+            </p>
+        {% endfor %}
+        <button type="submit"><tt>Войти</tt></button>
+        <button type="button" onclick="window.location.href='{% url back_page %}'">
+            <tt>Назад</tt>
+        </button>
+    </form>
+</div>
+{% endblock %}

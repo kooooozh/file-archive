@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{%  block pagecontent %}
+<div class="profile-frame">
+    <div class="avatar">
+        {% if avatar != '' %}
+        <img 
+            src="../../media/profile/{{avatar}}"
+            alt="photo"
+            class="profile-photo"
+        >
+        {% endif %}
+    </div>
+    <div style="margin-top: 5px; margin-bottom: 5px;" align="center">
+        <button type="button" style="font-size: 15px; width: 180px;" onclick="window.location.href='{% url person_page %}'">Редактировать профиль</button>
+        <button type="submit" style="font-size: 15px; width: 180px;" onclick="window.location.href='{% url back_page %}'">Выйти</button>
+    </div>
+</div>
+{%  endblock %}
