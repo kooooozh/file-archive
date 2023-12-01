@@ -47,11 +47,11 @@ def register_page(request):
                           email=form.cleaned_data['email'])
                 user.save()
 
-                resopnse = redirect('home_page')
+                response = redirect('home_page')
                 #  сохранение имя текущего пользователя в куки-файле 
-                resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
+                response.set_cookie(key='username', value=form.cleaned_data['username'])
 
-                return resopnse
+                return response
             #  введённый пароль не соответствует подтверждению
             else:
                 form_error.error_is_raised = True
@@ -78,10 +78,10 @@ def entrance_page(request):
             #  пользователь с указанным логином и паролем существует в базе данных
             if User.objects.all().filter(username=form.cleaned_data['username'],
                                          password=form.cleaned_data['password']).exists():
-                resopnse = redirect('home_page')
+                response = redirect('home_page')
                 #  сохранение имя текущего пользователя в куки-файле
-                resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
-                return resopnse
+                response.set_cookie(key='username', value=form.cleaned_data['username'])
+                return response
             #  возникла ошибка при поиске пользователя в базе данных
             else:
                 form_error.error_is_raised = True
@@ -167,9 +167,9 @@ def edit_user_info(request, edit_id):
                     #  сохраняем новое имя пользователя
                     User.objects.filter(username=request.COOKIES.get('username')).update(username=form.cleaned_data['username'])
                     #  изменяем текущее имя пользователя в куки файле
-                    resopnse = redirect('profile_page')
-                    resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
-                    return resopnse
+                    response = redirect('profile_page')
+                    response.set_cookie(key='username', value=form.cleaned_data['username'])
+                    return response
             #  если редактируется пароль
             elif form_name == 'password_form':
                 #  введённый старый пароль не совпадает с действующим паролем
