@@ -20,12 +20,13 @@ def teaser_page(request):
     return render(request, 'teaser.html', context={
         'enter_page': 'entrance_page',
         'register_page': 'registration_page',
-        'admin_page': 'admin_page'
+        'admin_page': 'admin_page',
+        'title': 'ARCHIVE'
     })
 
 
+"""Функция регистрации пользователя"""
 def register_page(request):
-    """Функция регистрации пользователя"""
 
     form_error = FormError()
 
@@ -61,7 +62,8 @@ def register_page(request):
     return render(request, 'registration.html', context={
         'back_page': 'teaser_page',
         'form': RegistrationForm(None),
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Регистрация'
     })
 
 
@@ -95,7 +97,8 @@ def entrance_page(request):
     return render(request, 'entrance.html', context={
         'back_page': 'teaser_page',
         'form': EnterForm(None),
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Регистрация'
     })
 
 
@@ -105,7 +108,8 @@ def home_page(request):
     return render(request, 'home.html', context={
         'person_page': 'profile_page',
         'back_page': 'teaser_page',
-        'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo']
+        'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo'],
+        'title': 'Домашняя страница'
     })
 
 
@@ -127,7 +131,8 @@ def profile_page(request):
         'email_edit': 'email_edit',
         'password_edit': 'password_edit',
         'photo_edit': 'profile_photo_edit',
-        'avatar': user['profile_photo']
+        'avatar': user['profile_photo'],
+        'title': 'Профиль'
     })
 
 
@@ -197,5 +202,6 @@ def edit_user_info(request, edit_id):
     return render(request, 'edit_user.html', context={
         'form': request_forms[edit_id](None),
         'back_page': 'profile_page',
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Редактирование данных'
     })
