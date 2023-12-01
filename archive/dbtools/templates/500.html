@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<div class="exception">
+    <h1 class="except">Ошибка 500</h1>
+    <h1 class="except">сервер не смог обработать запрос :(</h1>
+    <form action="" method="post" align="center">
+        <button type="button" onClick="javascript:history.go(-1);"><tt>Назад</tt></button>
+    </form>
+</div>
+
+{% endblock %}

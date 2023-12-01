@@ -27,6 +27,17 @@ h1.heading {
     margin-top: 0px;
 }
 
+h1.except {
+    font-family: "Stencil Std", fantasy;
+    font-style: italic;
+    color: #fffffff0;
+    text-align: center;
+    font-weight: 900;
+    font-size: 30px;
+    margin-top: 0px;
+}
+
+
 div.container {
     width: 400px;
     margin-top: 50px;
@@ -141,6 +152,16 @@ label.error {
     color: #ff0000;
     font-size: 20px;
     font-weight: 900px;
+}
+
+div.exception {
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 30px;
+    background-color: #121f90;
+    margin-top:200px;
+    align: center
 }
 
 img.profile-photo {
