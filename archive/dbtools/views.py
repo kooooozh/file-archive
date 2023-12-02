@@ -205,3 +205,15 @@ def edit_user_info(request, edit_id):
         'form_error': form_error,
         'title': 'Редактирование данных'
     })
+
+
+#обработка ошибок на сайте
+
+def error_404(request, exception):
+    # we add the path to the 404.html file
+    return render(request, '404.html')
+
+def error_500(request, exception):
+    # we add the path to the 500.html file
+    return render(request, '500.html')
+

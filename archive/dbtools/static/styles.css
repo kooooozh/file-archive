@@ -174,3 +174,27 @@ img.profile-photo {
     height: 100%;
     object-fit: cover;
 }
+
+
+h1.except {
+    font-family: "Stencil Std", fantasy;
+    font-style: italic;
+    color: #fffffff0;
+    text-align: center;
+    font-weight: 900;
+    font-size: 30px;
+    margin-top: 0px;
+}
+
+div.exception {
+    background-color: #4b0082;
+    width: 400px;
+    border-image: linear-gradient(90deg, #000000, #2C272E);
+    border-radius: 50px;
+    margin-top: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 30px;
+    box-shadow: 2px 2px 40px #a5a5db;
+    align: center
+}
