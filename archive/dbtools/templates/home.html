@@ -1,25 +1,50 @@
 {% extends 'base.html' %}
 
 {%  block pagecontent %}
-<div class="profile-frame" align="center">
-    <div class="avatar">
-        {% if avatar != '' %}
-        <img 
-            src="../../media/profile/{{avatar}}"
-            alt="photo"
-            class="profile-photo"
-        >
-        {% endif %}
+<div class="common-frame">
+    <div class="menu-frame">
+        <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url add_file %}'">
+            Добавить
+        </button>
+        <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url person_page %}'">
+            Редактировать
+        </button>
+        <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url person_page %}'">
+            Установить
+        </button>
+        <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url person_page %}'">
+            Удалить
+        </button>
     </div>
-    <button type="button"
-            style="font-size: 20px; width: 200px; margin-top: 10px;"
-            onclick="window.location.href='{% url person_page %}'">
-        Редактировать профиль
-    </button>
-    <button type="submit"
-            style="font-size: 20px; width: 200px; margin-top: 10px;"
-            onclick="window.location.href='{% url back_page %}'">
-        Выйти
-    </button>
+    <div class="profile-frame" align="center">
+        <div class="avatar">
+            {% if avatar != '' %}
+            <img
+                src="../../media/profile/{{avatar}}"
+                alt="photo"
+                class="profile-photo"
+            >
+            {% endif %}
+        </div>
+        <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url person_page %}'">
+            Редактировать профиль
+        </button>
+        <button type="submit"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url back_page %}'">
+            Выйти
+        </button>
+    </div>
+
 </div>
 {%  endblock %}

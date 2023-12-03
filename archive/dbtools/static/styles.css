@@ -121,6 +121,10 @@ div.avatar {
     overflow: hidden;
 }
 
+ div.common-frame {
+    margin-top: 10px;
+ }
+
 div.profile-frame {
     margin-right: 10px;
     padding: 10px;
@@ -129,6 +133,17 @@ div.profile-frame {
     width: 250px;
     box-shadow: 2px 2px 40px #a5a5db;
 }
+
+div.menu-frame {
+    float: left;
+    position: relative;
+    left: 5%;
+    box-shadow: 2px 2px 40px #a5a5db;
+    padding: 10px;
+    width: 200px;
+    margin-top: 10px;
+}
+
 
 div.person-view {
     margin-top: 50px;
@@ -185,6 +200,14 @@ h1.except {
     font-size: 30px;
     margin-top: 0px;
 }
+
+h3.tags {
+    color: #fffffff0;
+    text-align: left;
+    font-weight: 900;
+    margin-top: 0px;
+}
+
 
 div.exception {
     background-color: #4b0082;

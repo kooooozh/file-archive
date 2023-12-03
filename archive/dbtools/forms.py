@@ -107,3 +107,32 @@ class EditProfilePhoto(forms.Form):
     #  возврат имени формы для определения параметра редактирования
     def __str__(self) -> str:
         return 'profile_photo_form'
+
+
+class FormMessage:
+    """\
+    Класс с флагом возбуждения сообщения формы и строкой сообщения
+    неоюходимо, например, чтобы уведомить пользователя о успешном выполнении действия
+    <default> message_is_based : False
+    <default> message : None
+    """
+
+    def __init__(self) -> None:
+        #  флаг вызова ошибки при обработке запроса формы
+        self.message_is_raised: bool = False
+        #  строка сообщения ошибки
+        self.message: str = None
+
+class AddFile(forms.Form):
+    """форма для добавления нового файла"""
+    #выбор тэгов среди уже существующих
+    existing_tags = forms.MultipleChoiceField(label="Тэги",
+                                required=False, widget=forms.CheckboxSelectMultiple,
+                                              choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))
+    #строка для записи новых тэгов, относащихся к файлу
+    new_tags = forms.CharField(required=False, max_length=255, label="Новые тэги", widget=forms.TextInput(attrs={
+        'placeholder': 'Введите через запятую новые тэги'
+    }))
+    #поле для загрузки файла
+    file = forms.FileField( label="Выберите файл",
+                               required=True, widget=forms.ClearableFileInput)
