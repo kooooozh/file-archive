@@ -319,53 +319,6 @@ def download_page(request, tags_id):
         'files': files
     })
 
-def delete_page(request, tags_id, file_id):
-    #работа со страницей даления файлов
-    form_message = FormMessage()
-    tags_id_str = deepcopy(tags_id)
-    #если переход на страницу удаления произошел со страницы выбора тэгов
-    if file_id == " ":
-        tags_id = list(map(int, tags_id.split()))
-        files = File.objects.all()
-        #нахождение всех файлов к которым пользователь имеет доступ
-        files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
-        #если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
-        #если не выбран ни один тэг, будут фоказаны все файлы пользователя
-        if (len(tags_id)!=0):
-            for tag in tags_id:
-                files = files.filter(tags__in=[tag])
-        print("tags_id_str", tags_id_str)
-        return render(request, 'delete_page.html', context={
-            'back_page': 'choose_tags',
-            'files': files,
-            'tags_id_': tags_id_str,
-            'form_message': form_message
-        })
-    #если переход на страницу удаления произошел из-за нажатия кнопки "удалить" на странице удаления
-    else:
-        File.objects.all().filter(pk=int(file_id)).delete()
-        #отображение сообщения на странице об успешном удалении файла
-        form_message.message_is_raised = True
-        form_message.message = 'Файл успешно удален'
-        tags_id = list(map(int, tags_id.split()))
-        files = File.objects.all()
-        #отображение всех оставшихся файлов
-        # нахождение всех файлов к которым пользователь имеет доступ
-        files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
-        # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
-        # если не выбран ни один тэг, будут фоказаны все файлы пользователя
-        if (len(tags_id) != 0):
-            for tag in tags_id:
-                files = files.filter(tags__in=[tag])
-        print("tags_id_str", tags_id_str)
-        return render(request, 'delete_page.html', context={
-            'back_page': 'choose_tags',
-            'files': files,
-            'tags_id_': tags_id_str,
-            'form_message': form_message
-        })
-
-
 
 def delete_page(request, tags_id, file_id):
     #работа со страницей даления файлов
