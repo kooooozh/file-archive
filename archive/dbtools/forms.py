@@ -136,3 +136,9 @@ class AddFile(forms.Form):
     #поле для загрузки файла
     file = forms.FileField( label="Выберите файл",
                                required=True, widget=forms.ClearableFileInput)
+
+class ChooseTags(forms.Form):
+    '''форма для выбора тэгов по которым будет искаться файл'''
+    existing_tags = forms.MultipleChoiceField(label="Выберите тэги",
+                                              required=False, widget=forms.CheckboxSelectMultiple,
+                                              choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))

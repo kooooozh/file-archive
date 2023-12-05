@@ -2,11 +2,14 @@ import os
 
 from django.shortcuts import render, redirect
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+
 from .forms import *
 from django.core.files.storage import default_storage
-
-
+from django.views.decorators.csrf import csrf_exempt
+from operator import and_
+from django.db.models import Q
 
 
 def teaser_page(request):
@@ -115,6 +118,7 @@ def home_page(request):
         'back_page': 'teaser_page',
         'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo'],
         'add_file': 'add_file',
+        'choose_tags': 'choose_tags',
         'title': 'Домашняя страница'
     })
 
@@ -226,37 +230,35 @@ def add_file(request):
     if (request.method == 'POST'):
         form = AddFile(request.POST, request.FILES)
         if form.is_valid():
-            #проверка на существаоние файла в бд
+            # проверка на существаоние файла в бд
             if File.objects.all().filter(file_name=request.FILES['file'].name).exists():
                 form_error.error_is_raised = True
                 form_error.error_message = 'Файл с таким названием уже существует'
             else:
-                #загрузка файла в хранилище на сервере
+                # загрузка файла в хранилище на сервере
                 file_in_storage = default_storage.save(request.FILES['file'].name, request.FILES['file'])
-                #добавление файла в бд
+                # добавление файла в бд
                 file = File(file_name=request.FILES['file'].name,
                             file_path=default_storage.url(file_in_storage),
                             file_size=request.FILES['file'].size)
                 file.save()
                 file.users.add(User.objects.all().get(username=request.COOKIES.get('username')))
-                #добавление новых тэгов в бд и связь файла со всеми новыми тэгами
-                if not(len(form.cleaned_data['new_tags'])==0):
+                # добавление новых тэгов в бд и связь файла со всеми новыми тэгами
+                #если пользователь создал новые тэги
+                if not (len(form.cleaned_data['new_tags']) == 0):
                     for tag_name in form.cleaned_data['new_tags'].split(', '):
-                        if not(Tag.objects.all().filter(tag_name=tag_name).exists()):
+                        if not (Tag.objects.all().filter(tag_name=tag_name).exists()):
                             tag = Tag(tag_name=tag_name)
                             tag.save()
                             file.tags.add(tag)
-                #связь файла с выбранными, существующими тэгами
-                if(len(form.cleaned_data['existing_tags'])!=0):
+                # связь файла с выбранными, существующими тэгами
+                if (len(form.cleaned_data['existing_tags']) != 0):
                     for tag_id in form.cleaned_data['existing_tags']:
                         file.tags.add(Tag.objects.all().get(tag_id=tag_id))
 
-                #сообщение для пользователя
+                # сообщение для пользователя
                 form_message.message_is_raised = True
                 form_message.message = 'Файл успешно добавлен'
-
-
-
 
     return render(request, 'add_file.html', context={
         'back_page': 'home_page',
@@ -265,6 +267,51 @@ def add_file(request):
         'form_error': form_error,
         'form_message': form_message
     })
+
+
+def choose_tags_page(request):
+    #работа со страницей, на которой выбираются тэги по которым будут искаться файлы
+    form_error = FormError()
+    form_tags = ChooseTags()
+    #обработка запроса формы
+    if (request.method == 'POST'):
+        form = ChooseTags(request.POST)
+        #пробел нужен, чтобы код работал, если пользователь не выбрал ни одного тэга
+        tags = " "
+        if form.is_valid():
+            #если выбран хоть один тэг
+            if (len(form.cleaned_data['existing_tags']) != 0):
+                #создание строки с id всех выбранныз тэгов, для передачи следующей странице
+                for tag_id in form.cleaned_data['existing_tags']:
+                    tags += tag_id
+                    tags += " "
+            return HttpResponseRedirect(reverse('download_page', args=[tags]))
+
+    return render(request, 'choose_tags.html', context={
+        'back_page': 'home_page',
+        'title': 'Поиск по тэгам',
+        'form': form_tags,
+        'form_error': form_error,
+    })
+
+
+def download_page(request, tags_id):
+    #работа со страницей скачки файлов
+    tags_id = list(map(int, tags_id.split()))
+    files = File.objects.all()
+    #нахождение всех файлов к которым пользователь имеет доступ
+    files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+    #если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+    #если не выбран ни один тэг, будут фоказаны все файлы пользователя
+    if (len(tags_id)!=0):
+        for tag in tags_id:
+            files = files.filter(tags__in=[tag])
+    return render(request, 'download_page.html', context={
+        'back_page': 'choose_tags',
+        'files': files
+    })
+
+
 
 
 # обработка ошибок на сайте
