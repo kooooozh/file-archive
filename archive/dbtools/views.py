@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 
 from django.shortcuts import render, redirect
 from django.core.files.base import ContentFile
@@ -269,7 +270,7 @@ def add_file(request):
     })
 
 
-def choose_tags_page(request):
+def choose_tags_page(request, flag):
     #работа со страницей, на которой выбираются тэги по которым будут искаться файлы
     form_error = FormError()
     form_tags = ChooseTags()
@@ -285,13 +286,20 @@ def choose_tags_page(request):
                 for tag_id in form.cleaned_data['existing_tags']:
                     tags += tag_id
                     tags += " "
-            return HttpResponseRedirect(reverse('download_page', args=[tags]))
+            #функция выбора тэгов используется для удаления файлов и скачивания
+            #если теги выбираются для установки файла flag = 0
+            if (flag == 0):
+                return HttpResponseRedirect(reverse('download_page', args=[tags]))
+            #если для удаления файла flag = 1
+            elif (flag==1):
+                return HttpResponseRedirect(reverse('delete_page', args=[tags, " "]))
 
     return render(request, 'choose_tags.html', context={
         'back_page': 'home_page',
         'title': 'Поиск по тэгам',
         'form': form_tags,
         'form_error': form_error,
+        'button': "найти"
     })
 
 
@@ -302,7 +310,7 @@ def download_page(request, tags_id):
     #нахождение всех файлов к которым пользователь имеет доступ
     files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
     #если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
-    #если не выбран ни один тэг, будут фоказаны все файлы пользователя
+    #если не выбран ни один тэг, будут показаны все файлы пользователя
     if (len(tags_id)!=0):
         for tag in tags_id:
             files = files.filter(tags__in=[tag])
@@ -311,7 +319,85 @@ def download_page(request, tags_id):
         'files': files
     })
 
+def delete_page(request, tags_id, file_id):
+    #работа со страницей даления файлов
+    form_message = FormMessage()
+    tags_id_str = deepcopy(tags_id)
+    #если переход на страницу удаления произошел со страницы выбора тэгов
+    if file_id == " ":
+        tags_id = list(map(int, tags_id.split()))
+        files = File.objects.all()
+        #нахождение всех файлов к которым пользователь имеет доступ
+        files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+        #если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+        #если не выбран ни один тэг, будут фоказаны все файлы пользователя
+        if (len(tags_id)!=0):
+            for tag in tags_id:
+                files = files.filter(tags__in=[tag])
+        print("tags_id_str", tags_id_str)
+        return render(request, 'delete_page.html', context={
+            'back_page': 'choose_tags',
+            'files': files,
+            'tags_id_': tags_id_str,
+            'form_message': form_message
+        })
+    #если переход на страницу удаления произошел из-за нажатия кнопки "удалить" на странице удаления
+    else:
+        File.objects.all().filter(pk=int(file_id)).delete()
+        #отображение сообщения на странице об успешном удалении файла
+        form_message.message_is_raised = True
+        form_message.message = 'Файл успешно удален'
+        tags_id = list(map(int, tags_id.split()))
+        files = File.objects.all()
+        #отображение всех оставшихся файлов
+        # нахождение всех файлов к которым пользователь имеет доступ
+        files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+        # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+        # если не выбран ни один тэг, будут фоказаны все файлы пользователя
+        if (len(tags_id) != 0):
+            for tag in tags_id:
+                files = files.filter(tags__in=[tag])
+        print("tags_id_str", tags_id_str)
+        return render(request, 'delete_page.html', context={
+            'back_page': 'choose_tags',
+            'files': files,
+            'tags_id_': tags_id_str,
+            'form_message': form_message
+        })
 
+
+
+def delete_page(request, tags_id, file_id):
+    #работа со страницей даления файлов
+    form_message = FormMessage()
+    #строка из id тэгов нужна внутри файла для кнопок
+    tags_id_str = deepcopy(tags_id)
+    # если переход на страницу удаления произошел из-за нажатия кнопки "удалить" на странице удаления
+    #то передан file_id удаляемого файла
+    #если переход осуществлен со страницы с выбором тэгов file_id=" "
+    if file_id != " ":
+        File.objects.all().filter(pk=int(file_id)).delete()
+        # отображение сообщения на странице об успешном удалении файла
+        form_message.message_is_raised = True
+        form_message.message = 'Файл успешно удален'
+    #отображение сообщения на странице об успешном удалении файла
+    tags_id = list(map(int, tags_id.split()))
+    files = File.objects.all()
+    #отображение всех оставшихся файлов
+    # нахождение всех файлов к которым пользователь имеет доступ
+    files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+    # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+    # если не выбран ни один тэг, будут фоказаны все файлы пользователя
+    if (len(tags_id) != 0):
+        for tag in tags_id:
+            files = files.filter(tags__in=[tag])
+    print("tags_id_str", tags_id_str)
+    return render(request, 'delete_page.html', context={
+        'back_page': 'choose_tags',
+        'files': files,
+        'tags_id_': tags_id_str,
+        'form_message': form_message
+    })
 
 
 # обработка ошибок на сайте

@@ -13,6 +13,7 @@ urlpatterns = [
     path('home/profile/', profile_page, name='profile_page'),
     path('home/profile/<slug:edit_id>/', edit_user_info, name='edit_page'),
     path('home/add_file/', add_file, name='add_file'),
-    path('home/download_<tags_id>', download_page, name='download_page'),
-    path('home/choose_tags', choose_tags_page, name="choose_tags")
+    path('home/download_<tags_id>/', download_page, name='download_page'),
+    path('home/choose_tags/<int:flag>/', choose_tags_page, name="choose_tags"),
+    path('home/delete/<tags_id>/<file_id>/', delete_page, name='delete_page')
 ]
