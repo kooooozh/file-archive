@@ -128,7 +128,7 @@ class AddFile(forms.Form):
     #выбор тэгов среди уже существующих
     existing_tags = forms.MultipleChoiceField(label="Тэги",
                                 required=False, widget=forms.CheckboxSelectMultiple,
-                                              choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))
+                                              choices=list([tag.pk, tag.tag_name] for tag in Tag.objects.all()))
     #строка для записи новых тэгов, относащихся к файлу
     new_tags = forms.CharField(required=False, max_length=255, label="Новые тэги", widget=forms.TextInput(attrs={
         'placeholder': 'Введите через запятую новые тэги'
@@ -139,6 +139,7 @@ class AddFile(forms.Form):
 
 class ChooseTags(forms.Form):
     '''форма для выбора тэгов по которым будет искаться файл'''
+
     existing_tags = forms.MultipleChoiceField(label="Выберите тэги",
                                               required=False, widget=forms.CheckboxSelectMultiple,
                                               choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))

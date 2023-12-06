@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<h1 class="except">
+{% if form_message.message_is_raised %}
+    <p><label class="error"><b>{{ form_message.message }}</b></label></p>
+{% endif %}
+<table>
+    <tr>
+        <th>Имя файла</th>
+        <th>Тэги</th>
+        <th>Установить</th>
+    </tr>
+    {%for file in files %}
+        <tr>
+            <th>{{file.file_name}}</th>
+            <th>
+                {%for tag in file.tags.all%}
+                    {{tag.tag_name}}<br>
+                {% endfor %}
+            </th>
+            <th>
+                <button type="button"
+                style="font-size: 20px; width: 200px; margin-top: 10px;"
+                onclick="window.location.href='{% url 'delete_page' tags_id=tags_id_ file_id=file.pk %}'">
+                    Удалить
+                </button>
+            </th>
+        </tr>
+    {% endfor %}
+</table>
+</h1>
+<button class="form_button" type="button" onclick="window.location.href='{% url back_page flag=1%}'">
+            <tt>Назад</tt>
+</button>
+{% endblock %}
