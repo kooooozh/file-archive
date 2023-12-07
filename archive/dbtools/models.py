@@ -13,7 +13,7 @@ class User(models.Model):
     ---------------------------------------
     """
 
-    username = models.CharField(primary_key=True, max_length=50, 
+    username = models.CharField(primary_key=True, max_length=50,
                                 verbose_name='Имя пользователя',
                                 blank=False, null=False)
 
@@ -22,7 +22,7 @@ class User(models.Model):
     email = models.EmailField(verbose_name='Адрес электронной почты',
                               blank=False, null=True)
 
-    profile_photo = models.ImageField(upload_to='media/profile/', 
+    profile_photo = models.ImageField(upload_to='media/profile/',
                                       verbose_name='Фотография профиля',
                                       blank=True, null=True)
 
@@ -92,7 +92,7 @@ class File(models.Model):
 
     # Механизм связывания файлов с пользователями,
     # blank=False, т.к. в базе данных не должно быть "бесхозных" файлов
-    users = models.ManyToManyField('User', blank = False, related_name='users')
+    users = models.ManyToManyField('User', blank=False, related_name='users')
 
     def __str__(self):
         return self.file_name
@@ -114,10 +114,10 @@ class Tag(models.Model):
     -------------------------
     """
     tag_id = models.AutoField(primary_key=True, verbose_name='Id группы',
-                                blank=False, null=False)
+                              blank=False, null=False)
 
     tag_name = models.CharField(verbose_name='Имя группы', max_length=100,
-                                  blank=False, null=False)
+                                blank=False, null=False)
 
     def __str__(self):
         return self.tag_name

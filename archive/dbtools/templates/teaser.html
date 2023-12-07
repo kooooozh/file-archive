@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 
 {% block pagecontent %}
-<div class="homepageimg" align="center"></div>
-<div align="center">
-    <button type="button" onclick="window.location.href='{% url enter_page %}'">
-        <tt>Войти</tt>
-    </button>
-    <button type="button" onclick="window.location.href='admin/'">
-        <tt>Войти как администратор</tt>
-    </button>
-    <button type="button" onclick="window.location.href='{% url register_page %}'">
-        <tt>Зарегистрироваться</tt>
-    </button>
-</div>
+<main>
+    <div class="homepageimg" align="center"></div>
+    <div class="teaser-frame">
+        <div style="display: inline-block; margin-right: 10px;">
+            <button type="button" style="font-size: 20px;" onclick="window.location.href='{% url enter_page %}'">
+                <span class="data-style">Войти</span>
+            </button>
+        </div>
+        <div style="display: inline-block; margin-left: 10px;">
+            <button type="button" style="font-size: 20px;" onclick="window.location.href='{% url register_page %}'">
+                <span class="data-style">Зарегистрироваться</span>
+            </button>
+        </div>
+    </div>
+</main>
 {% endblock %}

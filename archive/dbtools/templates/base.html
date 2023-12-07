@@ -6,15 +6,17 @@
     <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}" />
     <link rel="shortcut icon" href="{% static 'images/logo.png' %}" />
     <head>
-        <title>{{ title}} </title>
+        <title>{{ title }}</title>
     </head>
     {% block cap %}
     <body>
-        <div class="cap">
-            <h1 class="heading">ARCHIVE</h1>
-        </div>
-    </body>
-    {% endblock %}
+        <header>
+            <div class="cap">
+                <h1 class="heading">ARCHIVE</h1>
+            </div>
+        </header>
     {% block pagecontent %}
+    {% endblock %}
+    </body>
     {% endblock %}
 </html>

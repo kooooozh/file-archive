@@ -244,7 +244,7 @@ def add_file(request):
                 file.save()
                 file.users.add(User.objects.all().get(username=request.COOKIES.get('username')))
                 # добавление новых тэгов в бд и связь файла со всеми новыми тэгами
-                #если пользователь создал новые тэги
+                # если пользователь создал новые тэги
                 if not (len(form.cleaned_data['new_tags']) == 0):
                     for tag_name in form.cleaned_data['new_tags'].split(', '):
                         if not (Tag.objects.all().filter(tag_name=tag_name).exists()):
@@ -271,18 +271,18 @@ def add_file(request):
 
 def choose_tags_page(request, flag):
     print(list([tag.tag_name for tag in Tag.objects.all()]))
-    #работа со страницей, на которой выбираются тэги по которым будут искаться файлы
+    # работа со страницей, на которой выбираются тэги по которым будут искаться файлы
     form_error = FormError()
     form_tags = ChooseTags()
-    #обработка запроса формы
+    # обработка запроса формы
     if (request.method == 'POST'):
         form = ChooseTags(request.POST)
-        #пробел нужен, чтобы код работал, если пользователь не выбрал ни одного тэга
+        # пробел нужен, чтобы код работал, если пользователь не выбрал ни одного тэга
         tags = " "
         if form.is_valid():
-            #если выбран хоть один тэг
+            # если выбран хоть один тэг
             if (len(form.cleaned_data['existing_tags']) != 0):
-                #создание строки с id всех выбранныз тэгов, для передачи следующей странице
+                # создание строки с id всех выбранныз тэгов, для передачи следующей странице
                 for tag_id in form.cleaned_data['existing_tags']:
                     tags += tag_id
                     tags += " "
@@ -304,14 +304,14 @@ def choose_tags_page(request, flag):
 
 
 def download_page(request, tags_id):
-    #работа со страницей скачки файлов
+    # работа со страницей скачки файлов
     tags_id = list(map(int, tags_id.split()))
     files = File.objects.all()
-    #нахождение всех файлов к которым пользователь имеет доступ
+    # нахождение всех файлов к которым пользователь имеет доступ
     files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
-    #если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
-    #если не выбран ни один тэг, будут показаны все файлы пользователя
-    if (len(tags_id)!=0):
+    # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+    # если не выбран ни один тэг, будут показаны все файлы пользователя
+    if (len(tags_id) != 0):
         for tag in tags_id:
             files = files.filter(tags__in=[tag])
     return render(request, 'download_page.html', context={
@@ -319,23 +319,24 @@ def download_page(request, tags_id):
         'files': files
     })
 
+
 def delete_page(request, tags_id, file_id):
-    #работа со страницей даления файлов
+    # работа со страницей даления файлов
     form_message = FormMessage()
-    #строка из id тэгов нужна внутри файла для кнопок
+    # строка из id тэгов нужна внутри файла для кнопок
     tags_id_str = deepcopy(tags_id)
     # если переход на страницу удаления произошел из-за нажатия кнопки "удалить" на странице удаления
-    #то передан file_id удаляемого файла
-    #если переход осуществлен со страницы с выбором тэгов file_id=" "
+    # то передан file_id удаляемого файла
+    # если переход осуществлен со страницы с выбором тэгов file_id=" "
     if file_id != " ":
         File.objects.all().filter(pk=int(file_id)).delete()
         # отображение сообщения на странице об успешном удалении файла
         form_message.message_is_raised = True
         form_message.message = 'Файл успешно удален'
-    #отображение сообщения на странице об успешном удалении файла
+    # отображение сообщения на странице об успешном удалении файла
     tags_id = list(map(int, tags_id.split()))
     files = File.objects.all()
-    #отображение всех оставшихся файлов
+    # отображение всех оставшихся файлов
     # нахождение всех файлов к которым пользователь имеет доступ
     files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
     # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
