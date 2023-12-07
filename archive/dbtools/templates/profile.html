@@ -1,44 +1,60 @@
 {% extends 'base.html' %}
 
 {% block pagecontent %}
-<div class="user-info" align="center">
-    <div class="avatar">
-        {% if avatar %}
-        <img 
-            src="../../media/profile/{{avatar}}"
-            alt="photo"
-            class="profile-photo"
-        />
-        {% endif %}
+<aside>
+    <div style="position: absolute;">
+        <div class="person-view" align="center">
+            <div class="avatar">
+                {% if avatar %}
+                <img src="../../media/profile/{{avatar}}" alt="photo" class="profile-photo"/>
+                {% endif %}
+            </div>
+            <div align="center" style="border: none; width: 200px; margin-top: 20px;">
+                <button type="button" onclick="window.location.href='{% url edit_page photo_edit %}'">
+                    <span class="data-style">Сменить фото профиля</span>
+                </button>
+            </div>
+        </div>
+        <div style="margin-top: 30px; margin-left: 220px;">
+            <button style="font-size: 20px;" onclick="window.location.href='{% url back_page %}'">
+                <span class="data-style">Назад</span>
+            </button>
+            <br>
+        </div>
     </div>
-    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
-        <button type="button" onclick="window.location.href='{% url edit_page photo_edit %}'">Сменить фото профиля</button>
+</aside>
+<main>
+    <div class="block">
+        <div class="user">
+            <label class="user-field" style="border:none">Имя пользователя: </label>
+            <label class="user-field">
+                <span class="data-style">{{ username }}</span>
+            </label><br>
+            <button style="font-size: 15px; margin-top: 25px;"
+                    onclick="window.location.href='{% url edit_page username_edit %}'">
+                <span class="data-style">Изменить имя пользователя</span>
+            </button>
+        </div>
+        <div class="user">
+            <label class="user-field" style="border:none">Email: </label>
+            <label class="user-field">
+                <span class="data-style">{{ email }}</span>
+            </label><br>
+            <button style="font-size: 15px; margin-top: 25px;"
+                    onclick="window.location.href='{% url edit_page email_edit %}'">
+                <span class="data-style">Изменить адрес электронной почты</span>
+            </button>
+        </div>
+        <div class="user">
+            <label class="user-field" style="border:none">Пароль: </label>
+            <label class="user-field">
+                <span class="data-style">{{ password }}</span>
+            </label><br>
+            <button style="font-size: 15px; margin-top: 25px;"
+                    onclick="window.location.href='{% url edit_page password_edit %}'">
+                <span class="data-style">Изменить пароль</span>
+            </button>
+        </div>
     </div>
-    <div align="center" style="border: none; max-width: 700px;">
-        <p>
-            <label class="user-field"><tt>Имя пользователя: </tt></label>
-            <label class="user-field">"{{ username }}"</label><br>
-            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page username_edit %}'">Изменить имя пользователя</button>
-        </p>
-    </div>
-    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
-        <p>
-            <label class="user-field"><tt>Адрес электронной почты: </tt></label>
-            <label class="user-field">{{ email }}</label><br>
-            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page email_edit %}'">Изменить адрес электронной почты</button>
-        </p>
-    </div>
-    <div align="center" style="border: none; max-width: 700px; margin-top: 5px;">
-        <p>
-            <label class="user-field"><tt>Пароль: </tt></label>
-            <label class="user-field">{{ password }}</label><br>
-            <button style="font-size: 15px;" onclick="window.location.href='{% url edit_page password_edit %}'">Изменить пароль</button>
-        </p>
-    </div>
-    <div>
-        <p>
-            <button style="font-size: 15px;" onclick="window.location.href='{% url back_page %}'">Назад</button><br> 
-        </p>
-    </div>
-</div>
+</main>
 {% endblock %}

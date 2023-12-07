@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<div class="container">
+    <h1 class="form-name"><tt>Добавление файла</tt></h1>
+    <form action="" align="center" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form_error.error_is_raised %}
+        <p><label class="error"><b>{{ form_error.error_message }}</b></label></p>
+        {% endif %}
+        {% if form_message.message_is_raised %}
+        <p><label class="error"><b>{{ form_message.message }}</b></label></p>
+        {% endif %}
+        {% for item in form %}
+        <p>
+            <label class="input-prompts">{{ item.label }}</label>
+        <h3 class="tags">{{ item }}</h3>
+        </p>
+        {% endfor %}
+        <button type="button" onclick="window.location.href='{% url back_page %}'">
+            <tt>Назад</tt>
+        </button>
+        <button type="submit"><tt>Добавить файлы</tt></button>
+    </form>
+</div>
+{% endblock %}

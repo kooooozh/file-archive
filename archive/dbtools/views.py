@@ -1,13 +1,20 @@
+import os
+
 from django.shortcuts import render, redirect
-from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from copy import deepcopy
 from .forms import *
+from django.core.files.storage import default_storage
+from django.views.decorators.csrf import csrf_exempt
+from operator import and_
+from django.db.models import Q
 
 
 def teaser_page(request):
     """Функция тизерной страницы"""
-    
+
     #  куки-файлы уже содержат имя пользователя 
     #  (пользователь уже зарегестрирован, выполняеся выход из аккаунта)
     if request.COOKIES.get('username') is not None:
@@ -20,13 +27,15 @@ def teaser_page(request):
     return render(request, 'teaser.html', context={
         'enter_page': 'entrance_page',
         'register_page': 'registration_page',
-        'admin_page': 'admin_page'
+        'admin_page': 'admin_page',
+        'title': 'ARCHIVE'
     })
 
 
-def register_page(request):
-    """Функция регистрации пользователя"""
+"""Функция регистрации пользователя"""
 
+
+def register_page(request):
     form_error = FormError()
 
     #  обработка запроса от формы
@@ -43,25 +52,26 @@ def register_page(request):
                 #  создание и сохранение нового пользователя
                 #  в базе данных при успешной проверке
                 user = User(username=form.cleaned_data['username'],
-                          password=form.cleaned_data['password'],
-                          email=form.cleaned_data['email'])
+                            password=form.cleaned_data['password'],
+                            email=form.cleaned_data['email'])
                 user.save()
 
-                resopnse = redirect('home_page')
+                response = redirect('home_page')
                 #  сохранение имя текущего пользователя в куки-файле 
-                resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
+                response.set_cookie(key='username', value=form.cleaned_data['username'])
 
-                return resopnse
+                return response
             #  введённый пароль не соответствует подтверждению
             else:
                 form_error.error_is_raised = True
                 form_error.error_message = 'Подтверждение пароля некорректно'
-    
+
     #  переход на страницу без отправки формы
     return render(request, 'registration.html', context={
         'back_page': 'teaser_page',
         'form': RegistrationForm(None),
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Регистрация'
     })
 
 
@@ -78,10 +88,10 @@ def entrance_page(request):
             #  пользователь с указанным логином и паролем существует в базе данных
             if User.objects.all().filter(username=form.cleaned_data['username'],
                                          password=form.cleaned_data['password']).exists():
-                resopnse = redirect('home_page')
+                response = redirect('home_page')
                 #  сохранение имя текущего пользователя в куки-файле
-                resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
-                return resopnse
+                response.set_cookie(key='username', value=form.cleaned_data['username'])
+                return response
             #  возникла ошибка при поиске пользователя в базе данных
             else:
                 form_error.error_is_raised = True
@@ -95,7 +105,8 @@ def entrance_page(request):
     return render(request, 'entrance.html', context={
         'back_page': 'teaser_page',
         'form': EnterForm(None),
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Регистрация'
     })
 
 
@@ -105,7 +116,10 @@ def home_page(request):
     return render(request, 'home.html', context={
         'person_page': 'profile_page',
         'back_page': 'teaser_page',
-        'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo']
+        'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo'],
+        'add_file': 'add_file',
+        'choose_tags': 'choose_tags',
+        'title': 'Домашняя страница'
     })
 
 
@@ -114,7 +128,8 @@ def profile_page(request):
 
     #  получение информации о пользователе из базы данных
     #  с помощью имени пользователя из куки-файлов
-    user = User.objects.values('username', 'password', 'email', 'profile_photo').get(username=request.COOKIES.get('username'))
+    user = User.objects.values('username', 'password', 'email', 'profile_photo').get(
+        username=request.COOKIES.get('username'))
 
     return render(request, 'profile.html', context={
         'username': user['username'],
@@ -127,7 +142,8 @@ def profile_page(request):
         'email_edit': 'email_edit',
         'password_edit': 'password_edit',
         'photo_edit': 'profile_photo_edit',
-        'avatar': user['profile_photo']
+        'avatar': user['profile_photo'],
+        'title': 'Профиль'
     })
 
 
@@ -165,11 +181,12 @@ def edit_user_info(request, edit_id):
                     form_error.error_message = 'Пользователь с введённым именем уже существует'
                 else:
                     #  сохраняем новое имя пользователя
-                    User.objects.filter(username=request.COOKIES.get('username')).update(username=form.cleaned_data['username'])
+                    User.objects.filter(username=request.COOKIES.get('username')).update(
+                        username=form.cleaned_data['username'])
                     #  изменяем текущее имя пользователя в куки файле
-                    resopnse = redirect('profile_page')
-                    resopnse.set_cookie(key='username', value=form.cleaned_data['username'])
-                    return resopnse
+                    response = redirect('profile_page')
+                    response.set_cookie(key='username', value=form.cleaned_data['username'])
+                    return response
             #  если редактируется пароль
             elif form_name == 'password_form':
                 #  введённый старый пароль не совпадает с действующим паролем
@@ -178,7 +195,8 @@ def edit_user_info(request, edit_id):
                     form_error.error_message = 'Пароли не совпадают'
                 else:
                     #  изменяем пароль и сохраняем
-                    User.objects.filter(username=request.COOKIES.get('username')).update(password=form.cleaned_data['password'])
+                    User.objects.filter(username=request.COOKIES.get('username')).update(
+                        password=form.cleaned_data['password'])
                     return redirect('profile_page')
             #  если редактируется электронная почта
             elif form_name == 'email_form':
@@ -188,14 +206,160 @@ def edit_user_info(request, edit_id):
             #  если редактируется фото профиля
             elif form_name == 'profile_photo_form':
                 #  обновляем фотографию пользователя
-                User.objects.filter(username=request.COOKIES.get('username')).update(profile_photo=form.cleaned_data['photo'])
+                User.objects.filter(username=request.COOKIES.get('username')).update(
+                    profile_photo=form.cleaned_data['photo'])
                 #  сохраняем фотографию в дирректорию медийных файлов
-                default_storage.save(f"profile/{form.cleaned_data['photo']}", ContentFile(request.FILES['photo'].read()))
+                default_storage.save(f"profile/{form.cleaned_data['photo']}",
+                                     ContentFile(request.FILES['photo'].read()))
                 return redirect('profile_page')
-    
+
     #  переход на страницу без отправки формы
     return render(request, 'edit_user.html', context={
         'form': request_forms[edit_id](None),
         'back_page': 'profile_page',
-        'form_error': form_error
+        'form_error': form_error,
+        'title': 'Редактирование данных'
     })
+
+
+def add_file(request):
+    form_error = FormError()
+    form_message = FormMessage()
+
+    #  обработка запроса от формы
+    if (request.method == 'POST'):
+        form = AddFile(request.POST, request.FILES)
+        if form.is_valid():
+            # проверка на существаоние файла в бд
+            if File.objects.all().filter(file_name=request.FILES['file'].name).exists():
+                form_error.error_is_raised = True
+                form_error.error_message = 'Файл с таким названием уже существует'
+            else:
+                # загрузка файла в хранилище на сервере
+                file_in_storage = default_storage.save(request.FILES['file'].name, request.FILES['file'])
+                # добавление файла в бд
+                file = File(file_name=request.FILES['file'].name,
+                            file_path=default_storage.url(file_in_storage),
+                            file_size=request.FILES['file'].size)
+                file.save()
+                file.users.add(User.objects.all().get(username=request.COOKIES.get('username')))
+                # добавление новых тэгов в бд и связь файла со всеми новыми тэгами
+                # если пользователь создал новые тэги
+                if not (len(form.cleaned_data['new_tags']) == 0):
+                    for tag_name in form.cleaned_data['new_tags'].split(', '):
+                        if not (Tag.objects.all().filter(tag_name=tag_name).exists()):
+                            tag = Tag(tag_name=tag_name)
+                            tag.save()
+                            file.tags.add(tag)
+                # связь файла с выбранными, существующими тэгами
+                if (len(form.cleaned_data['existing_tags']) != 0):
+                    for tag_id in form.cleaned_data['existing_tags']:
+                        file.tags.add(Tag.objects.all().get(tag_id=tag_id))
+
+                # сообщение для пользователя
+                form_message.message_is_raised = True
+                form_message.message = 'Файл успешно добавлен'
+
+    return render(request, 'add_file.html', context={
+        'back_page': 'home_page',
+        'title': 'Добавление файла',
+        'form': AddFile(None),
+        'form_error': form_error,
+        'form_message': form_message
+    })
+
+
+def choose_tags_page(request, flag):
+    print(list([tag.tag_name for tag in Tag.objects.all()]))
+    # работа со страницей, на которой выбираются тэги по которым будут искаться файлы
+    form_error = FormError()
+    form_tags = ChooseTags()
+    # обработка запроса формы
+    if (request.method == 'POST'):
+        form = ChooseTags(request.POST)
+        # пробел нужен, чтобы код работал, если пользователь не выбрал ни одного тэга
+        tags = " "
+        if form.is_valid():
+            # если выбран хоть один тэг
+            if (len(form.cleaned_data['existing_tags']) != 0):
+                # создание строки с id всех выбранныз тэгов, для передачи следующей странице
+                for tag_id in form.cleaned_data['existing_tags']:
+                    tags += tag_id
+                    tags += " "
+            # функция выбора тэгов используется для удаления файлов и скачивания
+            # если теги выбираются для установки файла flag = 0
+            if (flag == 0):
+                return HttpResponseRedirect(reverse('download_page', args=[tags]))
+            # если для удаления файла flag = 1
+            elif (flag == 1):
+                return HttpResponseRedirect(reverse('delete_page', args=[tags, " "]))
+
+    return render(request, 'choose_tags.html', context={
+        'back_page': 'home_page',
+        'title': 'Поиск по тэгам',
+        'form': form_tags,
+        'form_error': form_error,
+        'button': "найти"
+    })
+
+
+def download_page(request, tags_id):
+    # работа со страницей скачки файлов
+    tags_id = list(map(int, tags_id.split()))
+    files = File.objects.all()
+    # нахождение всех файлов к которым пользователь имеет доступ
+    files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+    # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+    # если не выбран ни один тэг, будут показаны все файлы пользователя
+    if (len(tags_id) != 0):
+        for tag in tags_id:
+            files = files.filter(tags__in=[tag])
+    return render(request, 'download_page.html', context={
+        'back_page': 'choose_tags',
+        'files': files
+    })
+
+
+def delete_page(request, tags_id, file_id):
+    # работа со страницей даления файлов
+    form_message = FormMessage()
+    # строка из id тэгов нужна внутри файла для кнопок
+    tags_id_str = deepcopy(tags_id)
+    # если переход на страницу удаления произошел из-за нажатия кнопки "удалить" на странице удаления
+    # то передан file_id удаляемого файла
+    # если переход осуществлен со страницы с выбором тэгов file_id=" "
+    if file_id != " ":
+        File.objects.all().filter(pk=int(file_id)).delete()
+        # отображение сообщения на странице об успешном удалении файла
+        form_message.message_is_raised = True
+        form_message.message = 'Файл успешно удален'
+    # отображение сообщения на странице об успешном удалении файла
+    tags_id = list(map(int, tags_id.split()))
+    files = File.objects.all()
+    # отображение всех оставшихся файлов
+    # нахождение всех файлов к которым пользователь имеет доступ
+    files = files.filter(users__in=[(User.objects.all().get(username=request.COOKIES.get('username'))).pk])
+    # если был выбран хоть один тэг, ищутся файлы содержащие все выбранные тэги
+    # если не выбран ни один тэг, будут фоказаны все файлы пользователя
+    if (len(tags_id) != 0):
+        for tag in tags_id:
+            files = files.filter(tags__in=[tag])
+    print("tags_id_str", tags_id_str)
+    return render(request, 'delete_page.html', context={
+        'back_page': 'choose_tags',
+        'files': files,
+        'tags_id_': tags_id_str,
+        'form_message': form_message
+    })
+
+
+# обработка ошибок на сайте
+
+def error_404(request, exception):
+    # we add the path to the 404.html file
+    return render(request, '404.html')
+
+
+def error_500(request, exception):
+    # we add the path to the 500.html file
+    return render(request, '500.html')
