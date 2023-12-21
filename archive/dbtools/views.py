@@ -363,3 +363,47 @@ def error_404(request, exception):
 def error_500(request, exception):
     # we add the path to the 500.html file
     return render(request, '500.html')
+
+
+def file_list(request):
+    # Страница со списком файлов пользователя для дальнейшего редактирования тегов
+    files = File.objects.all()
+    return render(request, 'file_list.html', {'files': files})
+
+def edit_file_tags(request, file_id):
+    # Работа со страницей редактирования тегов
+    form_error = FormError()
+    form_message = FormMessage()
+    file_instance = File.objects.get(pk=file_id)
+
+    if request.method == 'POST':
+        form = EditFileTagsForm(request.POST)
+        if form.is_valid():
+            # Существующие теги
+            selected_tags = form.cleaned_data['existing_tags']
+            file_instance.tags.clear()
+            for tag_id in selected_tags:
+                tag = Tag.objects.get(pk=tag_id)
+                file_instance.tags.add(tag)
+            # Новые теги
+            new_tags_str = form.cleaned_data['new_tags']
+            if new_tags_str:
+                new_tags_list = [tag.strip() for tag in new_tags_str.split(',')]
+                for tag_name in new_tags_list:
+                    tag, created = Tag.objects.get_or_create(tag_name=tag_name)
+                    file_instance.tags.add(tag)
+            file_instance.save()
+            form_message.message_is_raised = True
+            form_message.message = 'Tags updated successfully.'
+    else:
+        # Если ввели слишком длинный новый тег - вносим только существующие
+        current_tags = file_instance.tags.values_list('pk', flat=True)
+        form = EditFileTagsForm(initial={'existing_tags': current_tags})
+        form.fields['existing_tags'].choices = [(tag.pk, tag.tag_name) for tag in Tag.objects.all()]
+
+    return render(request, 'edit_file_tags.html', {
+        'form': form,
+        'form_error': form_error,
+        'form_message': form_message,
+        'back_page': 'file_list'
+    })

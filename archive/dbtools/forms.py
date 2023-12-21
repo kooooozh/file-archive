@@ -145,3 +145,21 @@ class ChooseTags(forms.Form):
     existing_tags = forms.MultipleChoiceField(label="Выберите тэги",
                                               required=False, widget=forms.CheckboxSelectMultiple,
                                               choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))
+
+
+class EditFileTagsForm(forms.Form):
+    '''Форма для редактирования тегов'''
+    existing_tags = forms.MultipleChoiceField(
+        label="Tags",
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        choices=list((tag.pk, tag.tag_name) for tag in Tag.objects.all())
+    )
+    new_tags = forms.CharField(
+        required=False,
+        max_length=100,
+        label="New tags",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Введите новые теги через запятую и пробел'
+        })
+    )

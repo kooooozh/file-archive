@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'archive.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Database_PostgreSQL_Archive',
+        'NAME': 'DB_Now',
         'USER': 'postgres',
         'PASSWORD': '12345!',
         'HOST': 'localhost',

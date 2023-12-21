@@ -15,5 +15,7 @@ urlpatterns = [
     path('home/add_file/', add_file, name='add_file'),
     path('home/download_<tags_id>/', download_page, name='download_page'),
     path('home/choose_tags/<int:flag>/', choose_tags_page, name="choose_tags"),
-    path('home/delete/<tags_id>/<file_id>/', delete_page, name='delete_page')
+    path('home/delete/<tags_id>/<file_id>/', delete_page, name='delete_page'),
+    path('home/file_list/', file_list, name='file_list'),
+    path('home/edit_tags/<int:file_id>/', edit_file_tags, name='edit_file_tags')
 ]

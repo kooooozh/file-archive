@@ -17,6 +17,11 @@
             </button>
             <button type="button"
                     style="font-size: 20px; width: 200px; margin-top: 10px;"
+                    onclick="window.location.href='{% url 'file_list' %}'">
+                Редактирование
+            </button>
+            <button type="button"
+                    style="font-size: 20px; width: 200px; margin-top: 10px;"
                     onclick="window.location.href='{% url choose_tags flag=1 %}'">
                 Удалить
             </button>

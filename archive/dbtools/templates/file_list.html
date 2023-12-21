@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block pagecontent %}
+<h1 class="except">
+    <table>
+        <tr>
+            <th>Имя файла</th>
+            <th>Тэги</th>
+            <th>Редактирование</th>
+        </tr>
+        {%for file in files %}
+        <tr>
+            <th>{{file.file_name}}</th>
+            <th>
+                {%for tag in file.tags.all%}
+                {{tag.tag_name}}<br>
+                {% endfor %}
+            </th>
+            <th>
+                <button type="button"
+                        style="font-size: 20px; width: 200px; margin-top: 10px;"
+                        onclick="window.location.href='{% url 'edit_file_tags' file.file_id %}'">
+                    Изменить теги
+                </button>
+            </th>
+        </tr>
+        {% endfor %}
+    </table>
+</h1>
+<button class="form_button" type="button" onclick="window.location.href='{% url 'home_page' %}'">
+    <span class="data-style"><tt>Назад</tt></span>
+</button>
+{% endblock %}
