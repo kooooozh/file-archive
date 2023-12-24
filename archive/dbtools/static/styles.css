@@ -255,3 +255,9 @@ h1.except {
     font-size: 30px;
     margin-top: 0px;
 }
+
+.form-content {
+    /* Add styles for your form */
+    color: #ffffff; /* Change to a color that contrasts with the background */
+    font-size: 16px; /* Adjust the size as needed */
+}

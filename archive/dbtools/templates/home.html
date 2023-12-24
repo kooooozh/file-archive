@@ -8,12 +8,22 @@
             <button type="button"
                     style="font-size: 20px; width: 200px; margin-top: 10px;"
                     onclick="window.location.href='{% url add_file %}'">
-                Добавить
+                Добавить файл
+            </button>
+            <button type="button"
+                    style="font-size: 20px; width: 200px; margin-top: 10px;"
+                    onclick="window.location.href='{% url add_dir %}'">
+                Добавить папку
             </button>
             <button type="button"
                     style="font-size: 20px; width: 200px; margin-top: 10px;"
                     onclick="window.location.href='{% url choose_tags flag=0 %}'">
                 Установить
+            </button>
+            <button type="button"
+                    style="font-size: 20px; width: 200px; margin-top: 10px;"
+                    onclick="window.location.href='{% url 'file_list' %}'">
+                Редактирование
             </button>
             <button type="button"
                     style="font-size: 20px; width: 200px; margin-top: 10px;"
