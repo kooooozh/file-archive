@@ -1,5 +1,7 @@
 import os
+import shutil
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.shortcuts import render, redirect
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, HttpResponseRedirect
@@ -10,7 +12,9 @@ from django.core.files.storage import default_storage
 from django.views.decorators.csrf import csrf_exempt
 from operator import and_
 from django.db.models import Q
-
+from django.conf import settings
+from shutil import make_archive
+import requests
 
 def teaser_page(request):
     """Функция тизерной страницы"""
@@ -119,6 +123,7 @@ def home_page(request):
         'avatar': User.objects.values('profile_photo').get(username=request.COOKIES.get('username'))['profile_photo'],
         'add_file': 'add_file',
         'choose_tags': 'choose_tags',
+        'add_dir': 'add_dir',
         'title': 'Домашняя страница'
     })
 
@@ -269,6 +274,89 @@ def add_file(request):
     })
 
 
+def add_dir(request):
+    form_error = FormError()
+    form_message = FormMessage()
+
+    #  обработка запроса от формы
+    if (request.method == 'POST'):
+        form = AddDir(request.POST, request.FILES)
+        if form.is_valid():
+            #создаем словарь, где ключ это название файла, а значение - путь до файла
+            paths = dict()
+            for elem in list(
+                    ("".join(list([letter for letter in request.POST['directories'] if letter not in '{"}']))).split(
+                            ',')):
+                pair = list(elem.split(':'))
+                paths[pair[0]] = pair[1]
+            #название добавляемой папки
+            dir_name = request.POST['directories'].split('/')[0].split(':"')[1]
+
+            # проверка на существаоние папки в бд
+            if File.objects.all().filter(file_name=dir_name).exists():
+                form_error.error_is_raised = True
+                form_error.error_message = 'Папка с таким названием уже существует'
+            else:
+                #файлы лежащие в папке имеют единственный вид "___название-папки___"
+                dir_tag = Tag(tag_name="___" + dir_name + "___")
+                dir_tag.save()
+
+                # добавление файла в бд
+                #расчет суммарного размера файлов в папке
+                dir_size = 0
+                #загрузка всех файлов в хранилище
+                for browsed_file in request.FILES.getlist('file_field'):
+                    dir_size += browsed_file.size
+                    file_in_storage = default_storage.save(paths[browsed_file.name], browsed_file)
+                    file = File(file_name=browsed_file.name,
+                                file_path=default_storage.url(file_in_storage),
+                                file_size=browsed_file.size)
+                    file.save()
+                    file.tags.add(dir_tag)
+
+
+                #расположене папки
+                zip_distance = settings.MEDIA_ROOT + dir_name
+                #расположение архива папки, необходимого для скачивания папки пользователем
+                arch_distance = shutil.make_archive(dir_name, 'zip', zip_distance)
+                #созранение архива
+                with open(arch_distance, 'rb') as file:
+                    file_in_storage = default_storage.save(dir_name + ".zip", file)
+                #сохранение папки
+                dirr = File(file_name=dir_name,
+                            file_size=dir_size,
+                            file_path=default_storage.url(file_in_storage))
+                dirr.save()
+                dirr.users.add(User.objects.all().get(username=request.COOKIES.get('username')))
+                # добавление новых тэгов в бд и связь файла со всеми новыми тэгами
+                # если пользователь создал новые тэги
+                if not (len(form.cleaned_data['new_tags']) == 0):
+                    for tag_name in form.cleaned_data['new_tags'].split(', '):
+                        if not (Tag.objects.all().filter(tag_name=tag_name).exists()):
+                            tag = Tag(tag_name=tag_name)
+                            tag.save()
+                            dirr.tags.add(tag)
+                # связь файла с выбранными, существующими тэгами
+                if len(form.cleaned_data['existing_tags']) != 0:
+                    for tag_id in form.cleaned_data['existing_tags']:
+                        dirr.tags.add(Tag.objects.all().get(tag_id=tag_id))
+
+
+
+
+            # сообщение для пользователя
+            form_message.message_is_raised = True
+            form_message.message = 'Папка успешно добавлена'
+
+    return render(request, 'add_dir.html', context={
+        'back_page': 'home_page',
+        'title': 'Добавление файла',
+        'form': AddDir(None),
+        'form_error': form_error,
+        'form_message': form_message
+    })
+
+
 def choose_tags_page(request, flag):
     print(list([tag.tag_name for tag in Tag.objects.all()]))
     # работа со страницей, на которой выбираются тэги по которым будут искаться файлы
@@ -329,10 +417,21 @@ def delete_page(request, tags_id, file_id):
     # то передан file_id удаляемого файла
     # если переход осуществлен со страницы с выбором тэгов file_id=" "
     if file_id != " ":
-        File.objects.all().filter(pk=int(file_id)).delete()
-        # отображение сообщения на странице об успешном удалении файла
+        if not('.zip' in File.objects.all().get(pk=int(file_id)).file_path):
+            default_storage.delete((File.objects.all().get(pk=int(file_id))).file_name)
+            File.objects.all().filter(pk=int(file_id)).delete()
+            # отображение сообщения на странице об успешном удалении файла
+        else:
+            for file in File.objects.all().filter(tags__in=[Tag.objects.all().get(tag_name="___" + File.objects.all().get(pk=int(file_id)).file_name + "___").pk]):
+                default_storage.delete(file.file_name)
+                file.delete()
+            Tag.objects.all().get(tag_name="___" + File.objects.all().get(pk=int(file_id)).file_name + "___").delete()
+            File.objects.all().get(pk=int(file_id)).delete()
+
         form_message.message_is_raised = True
-        form_message.message = 'Файл успешно удален'
+        form_message.message = 'Файлы успешно удалены'
+
+
     # отображение сообщения на странице об успешном удалении файла
     tags_id = list(map(int, tags_id.split()))
     files = File.objects.all()
@@ -350,6 +449,50 @@ def delete_page(request, tags_id, file_id):
         'files': files,
         'tags_id_': tags_id_str,
         'form_message': form_message
+    })
+
+
+def file_list(request):
+    # Страница со списком файлов пользователя для дальнейшего редактирования тегов
+    files = File.objects.all().exclude(tags__in=[t.pk for t in Tag.objects.all().filter(tag_name__contains="___")])
+    return render(request, 'file_list.html', {'files': files})
+
+def edit_file_tags(request, file_id):
+    # Работа со страницей редактирования тегов
+    form_error = FormError()
+    form_message = FormMessage()
+    file_instance = File.objects.get(pk=file_id)
+
+    if request.method == 'POST':
+        form = EditFileTagsForm(request.POST)
+        if form.is_valid():
+            # Существующие теги
+            selected_tags = form.cleaned_data['existing_tags']
+            file_instance.tags.clear()
+            for tag_id in selected_tags:
+                tag = Tag.objects.get(pk=tag_id)
+                file_instance.tags.add(tag)
+            # Новые теги
+            new_tags_str = form.cleaned_data['new_tags']
+            if new_tags_str:
+                new_tags_list = [tag.strip() for tag in new_tags_str.split(',')]
+                for tag_name in new_tags_list:
+                    tag, created = Tag.objects.get_or_create(tag_name=tag_name)
+                    file_instance.tags.add(tag)
+            file_instance.save()
+            form_message.message_is_raised = True
+            form_message.message = 'Tags updated successfully.'
+    else:
+        # Если ввели слишком длинный новый тег - вносим только существующие
+        current_tags = file_instance.tags.values_list('pk', flat=True)
+        form = EditFileTagsForm(initial={'existing_tags': current_tags})
+        form.fields['existing_tags'].choices = [(tag.pk, tag.tag_name) for tag in Tag.objects.all()]
+
+    return render(request, 'edit_file_tags.html', {
+        'form': form,
+        'form_error': form_error,
+        'form_message': form_message,
+        'back_page': 'file_list'
     })
 
 

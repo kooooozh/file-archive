@@ -129,7 +129,7 @@ class AddFile(forms.Form):
     # выбор тэгов среди уже существующих
     existing_tags = forms.MultipleChoiceField(label="Тэги",
                                               required=False, widget=forms.CheckboxSelectMultiple,
-                                              choices=list([tag.pk, tag.tag_name] for tag in Tag.objects.all()))
+                                              choices=list([tag.pk, tag.tag_name] for tag in Tag.objects.all().exclude(tag_name__contains="___")))
     # строка для записи новых тэгов, относащихся к файлу
     new_tags = forms.CharField(required=False, max_length=255, label="Новые тэги", widget=forms.TextInput(attrs={
         'placeholder': 'Введите через запятую новые тэги'
@@ -138,10 +138,37 @@ class AddFile(forms.Form):
     file = forms.FileField(label="Выберите файл",
                            required=True, widget=forms.ClearableFileInput)
 
+class AddDir(forms.Form):
+    """форма для добавления нового файла"""
+    # выбор тэгов среди уже существующих
+    existing_tags = forms.MultipleChoiceField(label="Тэги",
+                                              required=False, widget=forms.CheckboxSelectMultiple,
+                                              choices=list([tag.pk, tag.tag_name] for tag in Tag.objects.all().exclude(tag_name__contains="___")))
+    # строка для записи новых тэгов, относащихся к файлу
+    new_tags = forms.CharField(required=False, max_length=255, label="Новые тэги", widget=forms.TextInput(attrs={
+        'placeholder': 'Введите через запятую новые тэги'
+    }))
 
 class ChooseTags(forms.Form):
     '''форма для выбора тэгов по которым будет искаться файл'''
 
     existing_tags = forms.MultipleChoiceField(label="Выберите тэги",
                                               required=False, widget=forms.CheckboxSelectMultiple,
-                                              choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all()))
+                                              choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all().exclude(tag_name__contains="___")))
+
+
+class EditFileTagsForm(forms.Form):
+    '''Форма для редактирования тегов'''
+    existing_tags = forms.MultipleChoiceField(
+        label="Tags",
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        choices=list([tag.tag_id, tag.tag_name] for tag in Tag.objects.all().exclude(tag_name__contains="___")))
+    new_tags = forms.CharField(
+        required=False,
+        max_length=100,
+        label="New tags",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Введите новые теги через запятую и пробел'
+        })
+    )
